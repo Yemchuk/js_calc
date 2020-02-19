@@ -29,15 +29,15 @@ const startButton = document.querySelector(".start-button"),
   mobTempl = document.getElementById("mobileTemplates"),
   optAdapt = document.getElementById("adapt");
 
-showElement = elem => {
+function showElement(elem) {
   elem.style.display = "block";
-};
+}
 
-hideElem = elem => {
+function hideElem(elem) {
   elem.style.display = "none";
-};
+}
 
-priceCalc = elem => {
+function priceCalc(elem) {
   let result = 0,
     index = 0,
     options = [];
@@ -78,9 +78,9 @@ priceCalc = elem => {
   result += DATA.price[index];
 
   totalPriceSum.textContent = result;
-};
+}
 
-handlerCallBackForm = event => {
+function handlerCallBackForm(event) {
   const target = event.target;
 
   if (target.classList.contains("want-faster")) {
@@ -92,7 +92,7 @@ handlerCallBackForm = event => {
   if (target.classList.contains("calc-handler")) {
     priceCalc(target);
   }
-};
+}
 
 startButton.addEventListener("click", function() {
   showElement(mainForm);
