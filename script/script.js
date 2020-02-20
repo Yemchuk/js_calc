@@ -1,5 +1,6 @@
 "use strict";
 
+const DAY_STRING = ["день", "дня", "дней"];
 const DATA = {
   whichSite: ["landing", "multiPage", "onlineStore"],
   price: [4000, 8000, 26000],
@@ -15,7 +16,14 @@ const DATA = {
     [3, 10],
     [7, 14]
   ],
-  deadlinePercent: [20, 17, 15]
+  deadlinePercent: [20, 17, 15],
+  checkBox: ["desktopTemplates", "adapt", "mobileTemplates", "editable"],
+  checkBoxLabel: [
+    "desktopTemplates_value",
+    "adapt_value",
+    "mobileTemplates_value",
+    "editable_value"
+  ]
 };
 
 const startButton = document.querySelector(".start-button"),
@@ -27,7 +35,26 @@ const startButton = document.querySelector(".start-button"),
   fastRange = document.querySelector(".fast-range"),
   totalPriceSum = document.querySelector(".total_price__sum"),
   mobTempl = document.getElementById("mobileTemplates"),
-  optAdapt = document.getElementById("adapt");
+  optAdapt = document.getElementById("adapt"),
+  typeSite = document.querySelector(".type-site"),
+  maxDeadline = document.querySelector(".max-deadline"),
+  rangeDeadline = document.querySelector(".range-deadline"),
+  deadlineValue = document.querySelector(".deadline-value"),
+  checkboxLabels = document.querySelectorAll(".checkbox-label");
+
+function declOfNum(n, titles) {
+  return (
+    n +
+    " " +
+    titles[
+      n % 10 === 1 && n % 100 !== 11
+        ? 0
+        : n % 10 >= 2 && n % 10 <= 4 && (n % 100 < 10 || n % 100 >= 20)
+        ? 1
+        : 2
+    ]
+  );
+}
 
 function showElement(elem) {
   elem.style.display = "block";
@@ -37,15 +64,28 @@ function hideElem(elem) {
   elem.style.display = "none";
 }
 
+function renderTextContent(total, site, maxDay, minDay) {
+  totalPriceSum.textContent = total;
+  typeSite.textContent = site;
+  maxDeadline.textContent = declOfNum(maxDay, DAY_STRING);
+  rangeDeadline.min = minDay;
+  rangeDeadline.max = maxDay;
+  deadlineValue.textContent = declOfNum(rangeDeadline.value, DAY_STRING);
+}
+
 function priceCalc(elem) {
   let result = 0,
     index = 0,
-    options = [];
+    site = "",
+    options = [],
+    maxDeadlineDay = DATA.deadlineDay[index][1],
+    minDeadlineDay = DATA.deadlineDay[index][0];
 
   if (elem.name === "whichSite") {
     for (const item of formCalculate.elements) {
       if (item.type === "checkbox") {
         item.checked = false;
+        mobTempl.disabled = true;
       }
     }
     hideElem(fastRange);
@@ -54,6 +94,9 @@ function priceCalc(elem) {
   for (const item of formCalculate.elements) {
     if (item.name === "whichSite" && item.checked) {
       index = DATA.whichSite.indexOf(item.value);
+      site = item.dataset.site;
+      maxDeadlineDay = DATA.deadlineDay[index][1];
+      minDeadlineDay = DATA.deadlineDay[index][0];
     } else if (item.classList.contains("calc-handler") && item.checked) {
       options.push(item.value);
     }
@@ -77,17 +120,43 @@ function priceCalc(elem) {
 
   result += DATA.price[index];
 
-  totalPriceSum.textContent = result;
+  renderTextContent(result, site, maxDeadlineDay, minDeadlineDay);
 }
 
 function handlerCallBackForm(event) {
-  const target = event.target;
+  const target = event.target,
+    index = DATA.checkBox.indexOf(target.value);
+
+  if (target.type === "checkbox" && target.checked) {
+    for (const label of checkboxLabels) {
+      if (
+        label.textContent === "Нет" &&
+        label.classList.contains(DATA.checkBoxLabel[index])
+      ) {
+        label.textContent = "Да";
+      }
+    }
+  } else {
+    for (const label of checkboxLabels) {
+      if (
+        label.textContent === "Да" &&
+        label.classList.contains(DATA.checkBoxLabel[index])
+      ) {
+        label.textContent = "Нет";
+      }
+    }
+  }
 
   if (target.classList.contains("want-faster")) {
     target.checked ? showElement(fastRange) : hideElem(fastRange);
   }
 
-  optAdapt.checked ? (mobTempl.disabled = false) : (mobTempl.disabled = true);
+  if (optAdapt.checked) {
+    mobTempl.disabled = false;
+  } else {
+    mobTempl.disabled = true;
+    mobTempl.checked = false;
+  }
 
   if (target.classList.contains("calc-handler")) {
     priceCalc(target);
